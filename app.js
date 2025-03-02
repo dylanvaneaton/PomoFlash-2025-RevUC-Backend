@@ -114,7 +114,7 @@ app.post('/api/deletetask', async (req, res) => {
 app.post('/api/modifytask', async (req, res) => {
     const { taskid, taskname, taskdescription, taskcompletion, userid } = req.body;
     try {
-        const updatedtask = await db.none('UPDATE Tasks SET TaskName = $2, SET TaskDescription = $3, SET TaskCompletion = $4 WHERE TaskID = $1', [taskid, taskname, taskdescription, taskcompletion]);
+        const updatedtask = await db.none('UPDATE Tasks SET TaskName = $2, TaskDescription = $3, TaskCompletion = $4 WHERE TaskID = $1', [taskid, taskname, taskdescription, taskcompletion]);
         const taskslist = await db.any('SELECT * FROM Tasks WHERE UserID = $1', [userid]);
         res.status(201).json({tasks: taskslist});
     } catch (error) {
@@ -231,7 +231,7 @@ app.post('/api/checktimer', async (req, res) => {
         } 
         else {
             // reset timer
-            const resetTimer = db.none('UPDATE Users SET TimerStartTime = NULL, TimerActive = FALSE, SET TimerLength = NULL WHERE UserID = $1', [userid]);
+            const resetTimer = db.none('UPDATE Users SET TimerStartTime = NULL, TimerActive = FALSE, TimerLength = NULL WHERE UserID = $1', [userid]);
             res.json({ message: "timer reset" })
         }
     } catch (error) {
