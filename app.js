@@ -85,7 +85,7 @@ app.post('/api/fetchtasks', async (req, res) => {
     const { userid } = req.body;
     try {
         const tasks = await db.any('SELECT * FROM Tasks WHERE UserID = $1', [ userid ]);
-        res.status(201).json({tasks: result});
+        res.status(201).json({tasks: tasks});
     } catch (error) {
         console.error('Error fetching tasks for specified user:', error);
         res.status(500).json({ error: 'Failed to fetch tasks.' });
