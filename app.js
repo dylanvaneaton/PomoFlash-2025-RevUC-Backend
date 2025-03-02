@@ -93,7 +93,8 @@ app.post('/api/addtask', async (req, res) => {
             'INSERT INTO Tasks (UserID, TaskName, TaskDescription, TaskCompletion) VALUES ($1, $2, $3, $4) RETURNING *',
             [userid, taskname, taskdescription, taskcompletion]
         );
-        res.status(201).json({task: task});
+        const taskslist = await db.any('SELECT * FROM Tasks WHERE UserID = $1', [userid]);
+        res.status(201).json({tasks: taskslist});
     } catch (error) {
         console.error('Error inserting task:', error);
         res.status(500).json({ error: 'Failed to insert task.'});
