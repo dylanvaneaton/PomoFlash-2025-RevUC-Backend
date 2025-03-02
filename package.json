@@ -1,0 +1,15 @@
+{
+  "name": "PomoFlash-2025-RevUC-Backend",
+  "version": "1.0.0",
+  "description": "Backend Database API for PomoFlash",
+  "scripts": {
+    "dev":"node app.js"
+  },
+  "main": "app.js",
+  "repository": "git@github.com:dylanvaneaton/PomoFlash-2025-RevUC-Backend.git",
+  "author": "dylanvaneaton",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
