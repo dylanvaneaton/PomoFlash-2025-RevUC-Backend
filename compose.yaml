@@ -12,7 +12,8 @@ services:
       EXPRESS_PORT: 59632
     depends_on:
       - database
-    networks: webnet
+    networks: 
+      - webnet
   database:
     image: postgres
     environment:
