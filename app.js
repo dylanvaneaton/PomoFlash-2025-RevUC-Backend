@@ -231,7 +231,7 @@ app.post('/api/checktimer', async (req, res) => {
         } 
         else {
             // reset timer
-            const resetTimer = db.none('UPDATE Users SET TimerStartTime = NULL, TimerActive = FALSE, TimerLength = NULL WHERE UserID = $1', [userid]);
+            const resetTimer = await db.none('UPDATE Users SET TimerStartTime = NULL, TimerActive = FALSE, TimerLength = NULL WHERE UserID = $1', [userid]);
             res.json({ message: "timer reset" })
         }
     } catch (error) {
@@ -240,12 +240,15 @@ app.post('/api/checktimer', async (req, res) => {
     }
 });
 
-// app.post('/api/newtimer', async (req, res) => {
-//     const { userid, timerlength} = req.body
-//     try {
-//         const setTimer = db.none('UPDATE Users SET TimerStartTime = NOW(), SET')
-//     }
-// });
+app.post('/api/newtimer', async (req, res) => {
+    const { timerlength, userid } = req.body
+    try {
+        const setTimer = await db.none('UPDATE Users SET TimerStartTime = NOW(), TimerActive = TRUE, TimerLength = $1 WHERE UserID = $2', [timerlength, userid])
+    } catch (error) {
+        console.error('Error creating timer:', error)
+        res.status(500).json({ error: 'Failed to create new timer.' });
+    }
+});
 
 // Fetch all users, will be removed after testing
 app.get('/api/users', async (req, res) => {
