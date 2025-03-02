@@ -17,9 +17,21 @@ const db = pgp(dbConfig);
 const app = express();
 app.use(express.json()); // Honestly don't quite understand this yet.
 
-// CORS, fixes it for dev.
+// CORS, fixes it for dev. (and now prod)
+const allowedOrigins = [
+    'https://pomoflash-prod.vercel.app',
+    'https://pomoflash-staging.vercel.app',
+    'http://localhost:3000'
+];
+
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true); // Allow the request
+        } else {
+            callback(new Error('Not allowed by CORS')); // Reject the request
+        }
+    },
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type']
 }));
@@ -244,7 +256,9 @@ app.post('/api/checktimer', async (req, res) => {
 app.post('/api/newtimer', async (req, res) => {
     const { timerlength, userid } = req.body
     try {
-        const setTimer = await db.none('UPDATE Users SET TimerStartTime = NOW(), TimerActive = TRUE, TimerLength = $1 WHERE UserID = $2', [timerlength, userid])
+        const setTimer = await db.none('UPDATE Users SET TimerStartTime = NOW(), TimerActive = TRUE, TimerLength = $1 WHERE UserID = $2', [timerlength, userid]);
+        const timer = await db.one('SELECT TimerActive, TimerStartTime, TimerLength FROM Users WHERE UserID = $1', [userid]);
+        res.status(201).json({ timer: timer });
     } catch (error) {
         console.error('Error creating timer:', error)
         res.status(500).json({ error: 'Failed to create new timer.' });
