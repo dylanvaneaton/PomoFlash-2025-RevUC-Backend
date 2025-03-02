@@ -77,7 +77,7 @@ app.get('/api/users', async (req, res) => {
 });
 
 // Start server
-const port = process.env.EXPRESS_PORT || 3001;
+const port = process.env.EXPRESS_PORT;
 app.listen(port, () => {
     console.log('Server running')
 });
