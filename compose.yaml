@@ -12,8 +12,6 @@ services:
       EXPRESS_PORT: 59632
     depends_on:
       - database
-    networks: 
-      - webnet
   database:
     image: postgres
     environment:
@@ -25,8 +23,6 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./initdb.sql:/initdb.sql
-    networks:
-      - webnet
   nginx:
     image: nginx:latest
     container_name: nginx_proxy
@@ -38,10 +34,5 @@ services:
       - ./.certificates:/etc/nginx/certs:ro # Mount your cert files into the container
     depends_on:
       - backend
-    networks:
-      - webnet
-
-networks:
-  webnet:
 volumes:
   postgres-data:
