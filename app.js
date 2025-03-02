@@ -77,14 +77,36 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/addtask', async (req, res) => {
     const { userid, taskname, taskdescription, taskcompletion } = req.body;
     try {
-        const result = await db.one(
+        const task = await db.one(
             'INSERT INTO Tasks (UserID, TaskName, TaskDescription, TaskCompletion) VALUES ($1, $2, $3, $4) RETURNING *',
             [userid, taskname, taskdescription, taskcompletion]
         );
-        res.status(201).json({task: result});
+        res.status(201).json({task: task});
     } catch (error) {
         console.error('Error inserting task:', error);
         res.status(500).json({ error: 'Failed to insert task.'});
+    }
+});
+
+app.post('/api/deletetask', async (req, res) => {
+    const { taskid } = req.body;
+    try {
+        const task = await db.none('DELETE FROM Tasks WHERE TaskID = $1', [taskid]);
+        res.status(201).json({task: 'Task successfully deleted.'})
+    } catch (error) {
+        console.error('Error deleting task:', error);
+        res.status(500).json({ error: 'Task failed to delete.'});
+    }
+});
+
+app.post('/api/modifytask', async (req, res) => {
+    const { taskid, taskname, taskdescription, taskcompletion } = req.body;
+    try {
+        const task = await db.one('UPDATE Tasks SET TaskName = $2, SET TaskDescription = $3, SET TaskCompletion = $4 WHERE TaskID = $1', [taskid, taskname, taskdescription, taskcompletion]);
+        res.status(201).json({task: task});
+    } catch (error) {
+        console.error('Error modifying task:', error);
+        res.status(500).json({ error: 'Task failed to modify.'});
     }
 });
 
