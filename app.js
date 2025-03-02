@@ -29,11 +29,11 @@ app.get('/api/test-db', async (req, res) => {
 
 // Add user to DB
 app.post('/api/useradd', async (req, res) => {
-    const { firstname, userlogin } = req.body;
+    const { userfirst, userlogin } = req.body;
     try {
         const result = await db.one(
             'INSERT INTO Users (UserFirst, UserLogin) VALUES ($1, $2) RETURNING *',
-            [firstname, userlogin]
+            [userfirst, userlogin]
         ); // $1, $2 are parameterized queries, allows for sanatized safe input.
         res.status(201).json({user: result});
     } catch (error) {
