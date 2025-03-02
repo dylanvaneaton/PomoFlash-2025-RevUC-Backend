@@ -61,6 +61,18 @@ app.post('/api/adduser', async (req, res) => {
     }
 });
 
+// Fetch user info for id. Can use to pull info about the time for timer.
+app.post('/api/fetchuserbyid', async (req, res) => {
+    const { userid } = req.body;
+    try {
+        const user = await db.one('SELECT * FROM Users Where UserID = $1', [userid]);
+        res.status(201).json({ user: user });
+    } catch (error) {
+        console.error('Error fetching user info by id:', error);
+        res.status(500).json({ error: "Failed to fetch user info by id."});
+    }
+});
+
 // Login. Very simple, no security for simplicity. It's a hack after all.
 app.post('/api/login', async (req, res) => {
     const { userlogin } = req.body;
@@ -69,7 +81,7 @@ app.post('/api/login', async (req, res) => {
         res.status(201).json({ user: result });
     } catch (error) {
         console.error('Error fetching user info from login:', error);
-        res.status(500).json({ error: 'Failed to fetch user info.' });
+        res.status(500).json({ error: 'Failed to fetch user info from login.' });
     }
 });
 
@@ -100,10 +112,11 @@ app.post('/api/deletetask', async (req, res) => {
 });
 
 app.post('/api/modifytask', async (req, res) => {
-    const { taskid, taskname, taskdescription, taskcompletion } = req.body;
+    const { taskid, taskname, taskdescription, taskcompletion, userid } = req.body;
     try {
-        const task = await db.one('UPDATE Tasks SET TaskName = $2, SET TaskDescription = $3, SET TaskCompletion = $4 WHERE TaskID = $1', [taskid, taskname, taskdescription, taskcompletion]);
-        res.status(201).json({task: task});
+        const updatedtask = await db.one('UPDATE Tasks SET TaskName = $2, SET TaskDescription = $3, SET TaskCompletion = $4 WHERE TaskID = $1', [taskid, taskname, taskdescription, taskcompletion]);
+        const taskslist = await db.any('SELECT * FROM Tasks WHERE UserID = $1', [userid]);
+        res.status(201).json({tasks: taskslist});
     } catch (error) {
         console.error('Error modifying task:', error);
         res.status(500).json({ error: 'Task failed to modify.'});
@@ -197,11 +210,33 @@ app.post('/api/createcarddeckanswer', async (req, res) => {
 app.post('/api/fetchcarddeckanswers', async (req, res) => {
     const { deckquestionid } = req.body;
     try {
-        const questions = await db.any('SELECT * FROM DeckAnswers WHERE DeckQuestionID = $1', [deckquestionid]);
+        const answers = await db.any('SELECT * FROM DeckAnswers WHERE DeckQuestionID = $1', [deckquestionid]);
         res.status(201).json({answers: answers});
     } catch (error) {
         console.error('Error fetching answers for specified questions:', error);
         res.status(500).json({ error: 'Failed to fetch answers.' });
+    }
+});
+
+// Below this comment is my attempt at timering. It will probably be adjacent to a crime against humanity.
+app.post('/api/checktimer', async (req, res) => {
+    const { userid } = req.body;
+    try {
+        const isTimerActiveAndStillGood = await db.oneOrNone('SELECT * FROM Users WHERE TimerActive = TRUE ANDUserID = $1 AND (TimerStartTime + TimerLength) >= NOW()', [userid]);
+        
+        // If above returned a row, there is an active timer that is not yet stale.
+        if(isTimerActiveAndStillGood) {
+            const timer = await db.one('SELECT TimerActive, TimerStartTime, TimerLength FROM Users WHERE UserID = $1', [userid]);
+            res.json({timer: timer});
+        } 
+        else {
+            // reset timer
+            const resetTimer = db.none('UPDATE Users SET TimerStartTime = NULL, TimerActive = FALSE, SET TimerLength = NULL WHERE UserID = $1', [userid]);
+            res.json({ message: "timer reset" })
+        }
+    } catch (error) {
+        console.error('Error checking timer:', error);
+        res.status(500).json({ error: 'Failed to check or reset timer.' });
     }
 });
 
