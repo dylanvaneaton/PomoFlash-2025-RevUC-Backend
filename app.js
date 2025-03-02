@@ -81,7 +81,7 @@ app.post('/api/addtask', async (req, res) => {
 });
 
 // Fetch tasks for a specified user id.
-app.get('/api/fetchtasks', async (req, res) => {
+app.post('/api/fetchtasks', async (req, res) => {
     const { userid } = req.body;
     try {
         const tasks = await db.any('SELECT * FROM Tasks WHERE UserID = $1', [userid]);
