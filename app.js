@@ -114,7 +114,7 @@ app.post('/api/deletetask', async (req, res) => {
 app.post('/api/modifytask', async (req, res) => {
     const { taskid, taskname, taskdescription, taskcompletion, userid } = req.body;
     try {
-        const updatedtask = await db.one('UPDATE Tasks SET TaskName = $2, SET TaskDescription = $3, SET TaskCompletion = $4 WHERE TaskID = $1', [taskid, taskname, taskdescription, taskcompletion]);
+        const updatedtask = await db.none('UPDATE Tasks SET TaskName = $2, SET TaskDescription = $3, SET TaskCompletion = $4 WHERE TaskID = $1', [taskid, taskname, taskdescription, taskcompletion]);
         const taskslist = await db.any('SELECT * FROM Tasks WHERE UserID = $1', [userid]);
         res.status(201).json({tasks: taskslist});
     } catch (error) {
@@ -239,6 +239,13 @@ app.post('/api/checktimer', async (req, res) => {
         res.status(500).json({ error: 'Failed to check or reset timer.' });
     }
 });
+
+// app.post('/api/newtimer', async (req, res) => {
+//     const { userid, timerlength} = req.body
+//     try {
+//         const setTimer = db.none('UPDATE Users SET TimerStartTime = NOW(), SET')
+//     }
+// });
 
 // Fetch all users, will be removed after testing
 app.get('/api/users', async (req, res) => {
