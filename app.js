@@ -21,7 +21,8 @@ app.use(express.json()); // Honestly don't quite understand this yet.
 const allowedOrigins = [
     'https://pomoflash-prod.vercel.app',
     'https://pomoflash-staging.vercel.app',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'https://pomoflash-prod-git-prod-paulsparks-projects.vercel.app/'
 ];
 
 app.use(cors({
