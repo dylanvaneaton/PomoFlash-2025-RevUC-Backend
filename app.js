@@ -235,7 +235,7 @@ app.post('/api/fetchcarddeckanswers', async (req, res) => {
 app.post('/api/checktimer', async (req, res) => {
     const { userid } = req.body;
     try {
-        const isTimerActiveAndStillGood = await db.oneOrNone('SELECT * FROM Users WHERE TimerActive = TRUE ANDUserID = $1 AND (TimerStartTime + TimerLength) >= NOW()', [userid]);
+        const isTimerActiveAndStillGood = await db.oneOrNone('SELECT * FROM Users WHERE TimerActive = TRUE AND UserID = $1 AND (TimerStartTime + TimerLength) >= NOW()', [userid]);
         
         // If above returned a row, there is an active timer that is not yet stale.
         if(isTimerActiveAndStillGood) {
