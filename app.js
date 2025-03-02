@@ -96,7 +96,18 @@ app.post('/api/fetchtasks', async (req, res) => {
         res.status(201).json({tasks: tasks});
     } catch (error) {
         console.error('Error fetching tasks for specified user:', error);
-        res.status(500).json({ error: 'Failed to fetch tasks.' });
+        res.status(500).json({ error: 'Failed to fetch task by user.' });
+    }
+});
+
+app.post('/api/fetchtaskbyid', async (req, res) => {
+    const { taskid } = req.body;
+    try {
+        const task = await db.one('SELECT * FROM Tasks WHERE TaskID = $1', [taskid]);
+        res.status(201).json({task: task});
+    } catch (error) {
+        console.error('Error fetching task for specified id:', error);
+        res.status(500).json({ error: 'Failed to fetch task by id.'});
     }
 });
 
@@ -145,6 +156,18 @@ app.post('/api/fetchcarddeckquestions', async (req, res) => {
     } catch (error) {
         console.error('Error fetching questions for specified deck:', error);
         res.status(500).json({ error: 'Failed to fetch questions.' });
+    }
+});
+
+// Create a answer for a specified questionid.
+app.post('/api/createcarddeckanswer', async (req, res) => {
+    const { deckquestionid, answer } = req.body;
+    try {
+        const answer = await db.one('INSERT INTO DeckAnswers (DeckQuestionID, Answer) VALUES ($1, $2) RETURNING *', [deckquestionid, answer]);
+        res.status(201).json({answer: answer});
+    } catch (error) {
+        console.error('Error inserting answer for specified question:', error);
+        res.status(500).json({ error: 'Failed to insert answer.' });
     }
 });
 
