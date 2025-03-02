@@ -1,27 +1,20 @@
-worker_processes auto;
+server {
+    listen 80;
+    server_name dylanvaneaton.com;
 
-events {
-    worker_connections 1024;
+    location / {
+        return 301 https://$host$request_uri; # Redirect HTTP to HTTPS
+    }
 }
 
-http {
-    include mime.types;
-    default_type application/octet-stream;
+server {
+    listen 443 ssl;
+    server_name dylanvaneaton.com;
 
-    sendfile on;
-    keepalive_timeout 65;
+    ssl_certificate /etc/nginx/certs/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/privkey.pem;
 
-
-
-
-    # Reverse Proxy with HTTPS (requires SSL certificates)
-    server {
-        listen 443 ssl;
-        server_name dylanvaneaton.com;
-        ssl_certificate /etc/nginx/certs/fullchain.pem;
-        ssl_certificate_key /etc/nginx/certs/privkey.pem;
-
-        location / {
+    location / {
         proxy_pass http://localhost:59632; # Forward to your Express app
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
@@ -56,8 +49,5 @@ http {
         add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
      }
     }
-    }
-
-
 
 }
