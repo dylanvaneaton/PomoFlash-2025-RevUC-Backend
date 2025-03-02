@@ -1,5 +1,6 @@
 const express = require('express')
 const pgp = require('pg-promise')();
+const cors = require('cors');
 
 // DB Connection Info (From environment in compose)
 const dbConfig = {
@@ -15,6 +16,13 @@ const db = pgp(dbConfig);
 
 const app = express();
 app.use(express.json()); // Honestly don't quite understand this yet.
+
+// CORS, fixes it for dev.
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+}));
 
 // Test DB connection
 app.get('/api/test-db', async (req, res) => {
@@ -84,11 +92,59 @@ app.post('/api/addtask', async (req, res) => {
 app.post('/api/fetchtasks', async (req, res) => {
     const { userid } = req.body;
     try {
-        const tasks = await db.any('SELECT * FROM Tasks WHERE UserID = $1', [ userid ]);
+        const tasks = await db.any('SELECT * FROM Tasks WHERE UserID = $1', [userid]);
         res.status(201).json({tasks: tasks});
     } catch (error) {
         console.error('Error fetching tasks for specified user:', error);
         res.status(500).json({ error: 'Failed to fetch tasks.' });
+    }
+});
+
+// Create a card deck.
+app.post('/api/createcarddeck', async (req, res) => {
+    const { userid, deckname, deckdescription } = req.body;
+    try {
+        const deck = await db.one('INSERT INTO CardDecks (UserID, DeckName, DeckDescription) VALUES ($1, $2, $3) RETURNING *', [userid, deckname, deckdescription]);
+        res.status(201).json({deck: deck});
+    } catch (error) {
+        console.error('Error inserting into CardDecks:', error);
+        res.status(500).json({ error: 'Failed to insert CardDeck.'})
+    }
+});
+
+// Fetch card decks for a specified userid.
+app.post('/api/fetchcarddecks', async (req, res) => {
+    const { userid } = req.body;
+    try {
+        const decks = await db.any('SELECT * FROM CardDecks WHERE UserID = $1', [userid]);
+        res.status(201).json({decks: decks});
+    } catch (error) {
+        console.error('Error fetching decks for specified user:', error);
+        res.status(500).json({ error: 'Failed to fetch decks.' });
+    }
+});
+
+// Fetch questions for a specified deck.
+app.post('/api/fetchcarddeckquestions', async (req, res) => {
+    const { carddeckid } = req.body;
+    try {
+        const questions = await db.any('SELECT * FROM DeckQuestions WHERE CardDeckID = $1', [carddeckid]);
+        res.status(201).json({questions: questions});
+    } catch (error) {
+        console.error('Error fetching questions for specified deck:', error);
+        res.status(500).json({ error: 'Failed to fetch questions.' });
+    }
+});
+
+// Fetch answers for a specified question.
+app.post('/api/fetchcarddeckanswers', async (req, res) => {
+    const { deckquestionid } = req.body;
+    try {
+        const questions = await db.any('SELECT * FROM DeckAnswers WHERE DeckQuestionID = $1', [deckquestionid]);
+        res.status(201).json({answers: answers});
+    } catch (error) {
+        console.error('Error fetching answers for specified questions:', error);
+        res.status(500).json({ error: 'Failed to fetch answers.' });
     }
 });
 
