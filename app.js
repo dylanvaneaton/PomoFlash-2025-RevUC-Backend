@@ -27,8 +27,19 @@ app.get('/api/test-db', async (req, res) => {
     }
 });
 
+// Truncate (wipe) user table. Will probably be useful.
+app.post('/api/wipeusers', async (req, res) => {
+    try {
+        const result = await db.none('TRUNCATE TABLE Users CASCADE');
+        res.status(201).json({result: 'Success truncating users table.'});
+    } catch (error) {
+        console.error('Error truncating table:', error);
+        res.status(500).json({ error: 'Failed to truncate table.' })
+    }
+});
+
 // Add user to DB
-app.post('/api/useradd', async (req, res) => {
+app.post('/api/adduser', async (req, res) => {
     const { userfirst, userlogin } = req.body;
     try {
         const result = await db.one(
@@ -39,17 +50,6 @@ app.post('/api/useradd', async (req, res) => {
     } catch (error) {
         console.error('Error inserting user:', error);
         res.status(500).json({ error: 'Failed to insert user.'});
-    }
-});
-
-// Truncate user table. Will probably be useful.
-app.post('/api/wipeusers', async (req, res) => {
-    try {
-        const result = await db.none('TRUNCATE TABLE Users CASCADE');
-        res.status(201).json({result: 'Success truncating users table.'});
-    } catch (error) {
-        console.error('Error truncating table:', error);
-        res.status(500).json({ error: 'Failed to truncate table.' })
     }
 });
 
@@ -65,7 +65,33 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Fetch all users
+// Add a task for a user.
+app.post('/api/addtask', async (req, res) => {
+    const { userid, taskname, taskdescription, taskcompletion } = req.body;
+    try {
+        const result = await db.one(
+            'INSERT INTO Tasks (UserID, TaskName, TaskDescription, TaskCompletion) VALUES ($1, $2, $3, $4) RETURNING *',
+            [userid, taskname, taskdescription, taskcompletion]
+        );
+        res.status(201).json({task: result});
+    } catch (error) {
+        console.error('Error inserting task:', error);
+        res.status(500).json({ error: 'Failed to insert task.'});
+    }
+});
+
+// Fetch tasks for a specified user id.
+app.get('/api/fetchtasks', async (req, res) => {
+    const { userid } = req.body;
+    try {
+        const tasks = await db.any('SELECT * FROM Tasks WHERE UserID = $1', [userid]);
+    } catch (error) {
+        console.error('Error fetching tasks for specified user:', error);
+        res.status(500).json({ error: 'Failed to fetch tasks.' });
+    }
+});
+
+// Fetch all users, will be removed after testing
 app.get('/api/users', async (req, res) => {
     try {
         const users = await db.any('SELECT * FROM Users');
