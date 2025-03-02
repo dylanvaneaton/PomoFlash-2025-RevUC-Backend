@@ -124,6 +124,18 @@ app.post('/api/fetchcarddecks', async (req, res) => {
     }
 });
 
+// Create a question for a specified carddeckid.
+app.post('/api/createcarddeckquestion', async (req, res) => {
+    const { carddeckid, question } = req.body;
+    try {
+        const question = await db.one('INSERT INTO DeckQuestions (CardDeckID, Question) VALUES ($1, $2) RETURNING *', [carddeckid, question]);
+        res.status(201).json({question: question});
+    } catch (error) {
+        console.error('Error inserting questions for specified deck:', error);
+        res.status(500).json({ error: 'Failed to insert question.' });
+    }
+});
+
 // Fetch questions for a specified deck.
 app.post('/api/fetchcarddeckquestions', async (req, res) => {
     const { carddeckid } = req.body;
@@ -136,7 +148,7 @@ app.post('/api/fetchcarddeckquestions', async (req, res) => {
     }
 });
 
-// Fetch answers for a specified question.
+// Fetch answers for a specified deckquestionid.
 app.post('/api/fetchcarddeckanswers', async (req, res) => {
     const { deckquestionid } = req.body;
     try {
